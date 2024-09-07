@@ -10,7 +10,7 @@ namespace Benchmarks;
 
 internal class Program
 {
-    public static void Main(string[] _args)
+    public static void Main(string[] args)
     {
         Console.WriteLine($"AdvSimd.Arm64.IsSupported: {AdvSimd.Arm64.IsSupported}");
         Console.WriteLine($"Sse2.IsSupported: {Sse2.IsSupported}");
@@ -18,7 +18,23 @@ internal class Program
         Console.WriteLine($"Vector64.IsHardwareAccelerated: {Vector64.IsHardwareAccelerated}");
         Console.WriteLine($"Bmi1.IsSupported: {Bmi1.IsSupported}");
 
-        RunGuidBenchmarks();
+        if (args.Length == 0) args = ["--palette"];
+
+        switch (args[0].ToLowerInvariant())
+        {
+            case "--guid":
+                RunGuidBenchmarks();
+                break;
+            case "--uint128":
+                RunUint128Benchmarks();
+                break;
+            case "--palette":
+                RunSKBitmapPaletteBench();
+                break;
+            case "--swap":
+                RunBranchlessSwap();
+                break;
+        }
     }
 
     private static void RunGuidBenchmarks()
@@ -27,6 +43,24 @@ internal class Program
 
         // RunTests<GuidCompareToBenchmarks>();
         RunTests<GuidGreaterThanBenchmarks>("");
+    }
+
+    private static void RunUint128Benchmarks()
+    {
+        new Uint128GreaterThanBenchmarks().Normal();
+        RunTests<Uint128GreaterThanBenchmarks>();
+    }
+
+    private static void RunSKBitmapPaletteBench()
+    {
+        SKBitmapPaletteBench.Test();
+        RunTests<SKBitmapPaletteBench>();
+    }
+
+    private static void RunBranchlessSwap()
+    {
+        BranchlessSwap.Test();
+        RunTests<BranchlessSwap>();
     }
 
     private static void RunTests<T>(string prefix = "")
